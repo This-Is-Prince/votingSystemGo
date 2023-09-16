@@ -1,44 +1,48 @@
-package approval
+package quadratic
 
 import (
 	"math/big"
 	"testing"
 )
 
-func TestApprovalVoting(t *testing.T) {
+func TestQuadraticVoting(t *testing.T) {
 	choices := []string{"First", "Second", "Third", "Fourth"}
-	votes := []ApprovalVote{
+	votes := []QuadraticVote{
 		{
-			Choice:  []int{4, 2, 3},
+			Choice: QuadraticChoice{
+				"1": 3,
+				"2": 1,
+				"3": 4,
+				"4": 2,
+			},
 			Balance: big.NewFloat(2.4946602468376033),
 			Scores:  []*big.Float{big.NewFloat(0.4946602468376035), big.NewFloat(2)},
 		},
-		{
-			Choice:  []int{3, 1},
-			Balance: big.NewFloat(12.812822710153798),
-			Scores:  []*big.Float{big.NewFloat(10.812822710153798), big.NewFloat(2)},
-		},
 	}
-	strategies := []interface{}{1, 2}
-	approvalVoting := ApprovalVoting{
+	quadraticVoting := QuadraticVoting{
 		Choices:    choices,
 		Votes:      votes,
-		Strategies: strategies,
+		Strategies: []interface{}{1, 2},
 	}
 
-	validVotes := approvalVoting.GetValidVotes()
+	validVotes := quadraticVoting.GetValidVotes()
 	if len(validVotes) != len(votes) {
 		t.Errorf("Expected %d valid votes, got %d", len(votes), len(validVotes))
 	}
 
-	expectedScoresTotal := big.NewFloat(15.307483)
-	scoresTotal := approvalVoting.GetScoresTotal()
+	expectedScoresTotal := big.NewFloat(2.494660).SetPrec(7)
+	scoresTotal := quadraticVoting.GetScoresTotal().SetPrec(7)
 	if scoresTotal.Cmp(expectedScoresTotal) != 0 {
 		t.Errorf("Expected scores total to be %f, got %f", expectedScoresTotal, scoresTotal)
 	}
 
-	expectedScores := []*big.Float{big.NewFloat(12.812823), big.NewFloat(2.494660), big.NewFloat(15.307483), big.NewFloat(2.494660)}
-	scores := approvalVoting.GetScores()
+	expectedScores := []*big.Float{
+		big.NewFloat(0.7483980740512811),
+		big.NewFloat(0.2494660246837603),
+		big.NewFloat(0.9978640987350412),
+		big.NewFloat(0.4989320493675206),
+	}
+	scores := quadraticVoting.GetScores()
 	if len(scores) != len(choices) {
 		t.Errorf("Expected %d scores, got %d", len(choices), len(scores))
 	}
@@ -49,16 +53,16 @@ func TestApprovalVoting(t *testing.T) {
 		}
 	}
 
-	scoresByStrategy := approvalVoting.GetScoresByStrategy()
+	scoresByStrategy := quadraticVoting.GetScoresByStrategy()
 	if len(scoresByStrategy) != len(choices) {
 		t.Errorf("Expected %d scoresByStrategy, got %d", len(choices), len(scoresByStrategy))
 	}
 
 	expectedScoresByStrategy := [][]*big.Float{
-		{big.NewFloat(10.812822710153798), big.NewFloat(2)},
-		{big.NewFloat(0.4946602468376035), big.NewFloat(2)},
-		{big.NewFloat(11.307482956991402), big.NewFloat(4)},
-		{big.NewFloat(0.4946602468376035), big.NewFloat(2)},
+		{big.NewFloat(0.14808111041719751), big.NewFloat(0.598718459241025)},
+		{big.NewFloat(0.049360370139065836), big.NewFloat(0.19957281974700825)},
+		{big.NewFloat(0.19744148055626334), big.NewFloat(0.798291278988033)},
+		{big.NewFloat(0.09872074027813167), big.NewFloat(0.39914563949401655)},
 	}
 
 	for i, scoreByStrategy := range scoresByStrategy {
@@ -68,4 +72,5 @@ func TestApprovalVoting(t *testing.T) {
 			}
 		}
 	}
+
 }
