@@ -3,7 +3,6 @@ package weighted
 import (
 	"log"
 	"strconv"
-	"testing"
 
 	"github.com/thoas/go-funk"
 )
@@ -84,7 +83,7 @@ func (v *WeightedVoting) GetScoresTotal() float64 {
 	}, 0).(float64)
 }
 
-func (v *WeightedVoting) GetScores(t *testing.T) []float64 {
+func (v *WeightedVoting) GetScores() []float64 {
 	scoresTotal := 0.0
 	scores := []float64{}
 
@@ -119,12 +118,10 @@ func (v *WeightedVoting) GetScores(t *testing.T) []float64 {
 	}
 	newScores := CalcReducedQuadraticScores(scoresTotal, percentageOfScores)
 
-	t.Error("NewScores:-", newScores)
-
 	return newScores
 }
 
-func (v *WeightedVoting) GetScoresByStrategy(t *testing.T) [][]float64 {
+func (v *WeightedVoting) GetScoresByStrategy() [][]float64 {
 	scoresTotal := 0.0
 	scoresByStrategy := [][]float64{}
 

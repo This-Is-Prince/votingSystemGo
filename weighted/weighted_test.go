@@ -83,7 +83,7 @@ func TestWeightedVoting(t *testing.T) {
 		(1.9504854383113572),
 		(3.690448062057391),
 	}
-	scores := quadraticVoting.GetScores(t)
+	scores := quadraticVoting.GetScores()
 	if len(scores) != len(choices) {
 		t.Errorf("Expected %d scores, got %d", len(choices), len(scores))
 	}
@@ -94,7 +94,7 @@ func TestWeightedVoting(t *testing.T) {
 		}
 	}
 
-	scoresByStrategy := quadraticVoting.GetScoresByStrategy(t)
+	scoresByStrategy := quadraticVoting.GetScoresByStrategy()
 	if len(scoresByStrategy) != len(choices) {
 		t.Errorf("Expected %d scoresByStrategy, got %d", len(choices), len(scoresByStrategy))
 	}
