@@ -1,8 +1,9 @@
 package approval
 
 import (
-	"math/big"
 	"testing"
+
+	"github.com/This-Is-Prince/votingSystemGo/utils"
 )
 
 func TestApprovalVoting(t *testing.T) {
@@ -10,13 +11,13 @@ func TestApprovalVoting(t *testing.T) {
 	votes := []ApprovalVote{
 		{
 			Choice:  []int{4, 2, 3},
-			Balance: big.NewFloat(2.4946602468376033),
-			Scores:  []*big.Float{big.NewFloat(0.4946602468376035), big.NewFloat(2)},
+			Balance: float64(2.4946602468376033),
+			Scores:  []float64{float64(0.4946602468376035), float64(2)},
 		},
 		{
 			Choice:  []int{3, 1},
-			Balance: big.NewFloat(12.812822710153798),
-			Scores:  []*big.Float{big.NewFloat(10.812822710153798), big.NewFloat(2)},
+			Balance: float64(12.812822710153798),
+			Scores:  []float64{float64(10.812822710153798), float64(2)},
 		},
 	}
 	strategies := []interface{}{1, 2}
@@ -31,20 +32,20 @@ func TestApprovalVoting(t *testing.T) {
 		t.Errorf("Expected %d valid votes, got %d", len(votes), len(validVotes))
 	}
 
-	expectedScoresTotal := big.NewFloat(15.307483)
+	expectedScoresTotal := float64(15.307483)
 	scoresTotal := approvalVoting.GetScoresTotal()
-	if scoresTotal.Cmp(expectedScoresTotal) != 0 {
+	if !utils.FloatEqual(scoresTotal, expectedScoresTotal) {
 		t.Errorf("Expected scores total to be %f, got %f", expectedScoresTotal, scoresTotal)
 	}
 
-	expectedScores := []*big.Float{big.NewFloat(12.812823), big.NewFloat(2.494660), big.NewFloat(15.307483), big.NewFloat(2.494660)}
+	expectedScores := []float64{float64(12.812822710153798), float64(2.4946602468376033), float64(15.307483), float64(2.4946602468376033)}
 	scores := approvalVoting.GetScores()
 	if len(scores) != len(choices) {
 		t.Errorf("Expected %d scores, got %d", len(choices), len(scores))
 	}
 
 	for i, score := range scores {
-		if score.SetPrec(5).Cmp(expectedScores[i].SetPrec(5)) != 0 {
+		if !utils.FloatEqual(score, expectedScores[i]) {
 			t.Errorf("Expected score %f for choice %s, got %f", expectedScores[i], choices[i], score)
 		}
 	}
@@ -54,16 +55,16 @@ func TestApprovalVoting(t *testing.T) {
 		t.Errorf("Expected %d scoresByStrategy, got %d", len(choices), len(scoresByStrategy))
 	}
 
-	expectedScoresByStrategy := [][]*big.Float{
-		{big.NewFloat(10.812822710153798), big.NewFloat(2)},
-		{big.NewFloat(0.4946602468376035), big.NewFloat(2)},
-		{big.NewFloat(11.307482956991402), big.NewFloat(4)},
-		{big.NewFloat(0.4946602468376035), big.NewFloat(2)},
+	expectedScoresByStrategy := [][]float64{
+		{float64(10.812822710153798), float64(2)},
+		{float64(0.4946602468376035), float64(2)},
+		{float64(11.307482956991402), float64(4)},
+		{float64(0.4946602468376035), float64(2)},
 	}
 
 	for i, scoreByStrategy := range scoresByStrategy {
 		for j, score := range scoreByStrategy {
-			if score.SetPrec(5).Cmp(expectedScoresByStrategy[i][j].SetPrec(5)) != 0 {
+			if !utils.FloatEqual(score, expectedScoresByStrategy[i][j]) {
 				t.Errorf("Expected score %f got %f", expectedScoresByStrategy[i][j], score)
 			}
 		}

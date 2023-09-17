@@ -1,15 +1,13 @@
 package approval
 
 import (
-	"math/big"
-
 	"github.com/thoas/go-funk"
 )
 
 type ApprovalVote struct {
-	Choice  []int        `json:"choice"`
-	Balance *big.Float   `json:"balance"`
-	Scores  []*big.Float `json:"scores"`
+	Choice  []int     `json:"choice"`
+	Balance float64   `json:"balance"`
+	Scores  []float64 `json:"scores"`
 }
 
 type ApprovalVoting struct {
@@ -34,23 +32,23 @@ func (v *ApprovalVoting) GetValidVotes() []ApprovalVote {
 	}).([]ApprovalVote)
 }
 
-func (v *ApprovalVoting) GetScoresTotal() *big.Float {
-	return funk.Reduce(v.Votes, func(acc *big.Float, vote ApprovalVote) *big.Float {
-		return acc.Add(acc, vote.Balance)
-	}, big.NewFloat(0)).(*big.Float)
+func (v *ApprovalVoting) GetScoresTotal() float64 {
+	return funk.Reduce(v.Votes, func(acc float64, vote ApprovalVote) float64 {
+		return acc + vote.Balance
+	}, float64(0)).(float64)
 }
 
-func (v *ApprovalVoting) GetScores() []*big.Float {
-	scores := []*big.Float{}
+func (v *ApprovalVoting) GetScores() []float64 {
+	scores := []float64{}
 
 	for range v.Choices {
-		scores = append(scores, big.NewFloat(0))
+		scores = append(scores, float64(0))
 	}
 
 	for _, vote := range v.Votes {
 		if IsValidChoice(vote.Choice, v.Choices) {
 			for _, choice := range vote.Choice {
-				scores[choice-1] = scores[choice-1].Add(scores[choice-1], vote.Balance)
+				scores[choice-1] = scores[choice-1] + vote.Balance
 			}
 		}
 	}
@@ -58,13 +56,13 @@ func (v *ApprovalVoting) GetScores() []*big.Float {
 	return scores
 }
 
-func (v *ApprovalVoting) GetScoresByStrategy() [][]*big.Float {
-	scoresByStrategy := [][]*big.Float{}
+func (v *ApprovalVoting) GetScoresByStrategy() [][]float64 {
+	scoresByStrategy := [][]float64{}
 
 	for range v.Choices {
-		scores := []*big.Float{}
+		scores := []float64{}
 		for range v.Strategies {
-			scores = append(scores, big.NewFloat(0))
+			scores = append(scores, float64(0))
 		}
 		scoresByStrategy = append(scoresByStrategy, scores)
 	}
@@ -73,7 +71,7 @@ func (v *ApprovalVoting) GetScoresByStrategy() [][]*big.Float {
 		if IsValidChoice(vote.Choice, v.Choices) {
 			for _, choice := range vote.Choice {
 				for idx, score := range vote.Scores {
-					scoresByStrategy[choice-1][idx] = scoresByStrategy[choice-1][idx].Add(scoresByStrategy[choice-1][idx], score)
+					scoresByStrategy[choice-1][idx] = scoresByStrategy[choice-1][idx] + score
 				}
 			}
 		}

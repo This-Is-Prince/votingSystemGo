@@ -1,16 +1,15 @@
 package singleChoice
 
 import (
-	"math/big"
 	"testing"
 
 	"github.com/thoas/go-funk"
 )
 
 type SingleChoiceVote struct {
-	Choice  int          `json:"choice"`
-	Balance *big.Float   `json:"balance"`
-	Scores  []*big.Float `json:"scores"`
+	Choice  int       `json:"choice"`
+	Balance float64   `json:"balance"`
+	Scores  []float64 `json:"scores"`
 }
 
 type SingleChoiceVoting struct {
@@ -29,36 +28,36 @@ func (v *SingleChoiceVoting) GetValidVotes() []SingleChoiceVote {
 	}).([]SingleChoiceVote)
 }
 
-func (v *SingleChoiceVoting) GetScoresTotal() *big.Float {
-	return funk.Reduce(v.Votes, func(acc *big.Float, vote SingleChoiceVote) *big.Float {
-		return acc.Add(acc, vote.Balance)
-	}, big.NewFloat(0)).(*big.Float)
+func (v *SingleChoiceVoting) GetScoresTotal() float64 {
+	return funk.Reduce(v.Votes, func(acc float64, vote SingleChoiceVote) float64 {
+		return acc + vote.Balance
+	}, float64(0)).(float64)
 }
 
-func (v *SingleChoiceVoting) GetScores(t *testing.T) []*big.Float {
-	scores := []*big.Float{}
+func (v *SingleChoiceVoting) GetScores(t *testing.T) []float64 {
+	scores := []float64{}
 
 	for range v.Choices {
-		scores = append(scores, big.NewFloat(0))
+		scores = append(scores, float64(0))
 	}
 
 	for _, vote := range v.Votes {
 		choice := vote.Choice
 		if IsValidChoice(choice, v.Choices) {
-			scores[choice-1] = scores[choice-1].Add(scores[choice-1], vote.Balance)
+			scores[choice-1] = scores[choice-1] + vote.Balance
 		}
 	}
 
 	return scores
 }
 
-func (v *SingleChoiceVoting) GetScoresByStrategy(t *testing.T) [][]*big.Float {
-	scoresByStrategy := [][]*big.Float{}
+func (v *SingleChoiceVoting) GetScoresByStrategy(t *testing.T) [][]float64 {
+	scoresByStrategy := [][]float64{}
 
 	for range v.Choices {
-		scores := []*big.Float{}
+		scores := []float64{}
 		for range v.Strategies {
-			scores = append(scores, big.NewFloat(0))
+			scores = append(scores, float64(0))
 		}
 		scoresByStrategy = append(scoresByStrategy, scores)
 	}
@@ -67,7 +66,7 @@ func (v *SingleChoiceVoting) GetScoresByStrategy(t *testing.T) [][]*big.Float {
 		choice := vote.Choice
 		if IsValidChoice(choice, v.Choices) {
 			for idx, score := range vote.Scores {
-				scoresByStrategy[choice-1][idx] = scoresByStrategy[choice-1][idx].Add(scoresByStrategy[choice-1][idx], score)
+				scoresByStrategy[choice-1][idx] = scoresByStrategy[choice-1][idx] + score
 			}
 		}
 	}

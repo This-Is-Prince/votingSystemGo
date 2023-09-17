@@ -1,8 +1,9 @@
 package singleChoice
 
 import (
-	"math/big"
 	"testing"
+
+	"github.com/This-Is-Prince/votingSystemGo/utils"
 )
 
 func TestSingleChoiceVoting(t *testing.T) {
@@ -10,30 +11,30 @@ func TestSingleChoiceVoting(t *testing.T) {
 	votes := []SingleChoiceVote{
 		{
 			Choice:  1,
-			Balance: big.NewFloat(2.4946602468376033),
-			Scores: []*big.Float{
-				big.NewFloat(0.4946602468376035), big.NewFloat(2),
+			Balance: float64(2.4946602468376033),
+			Scores: []float64{
+				float64(0.4946602468376035), float64(2),
 			},
 		},
 		{
 			Choice:  2,
-			Balance: big.NewFloat(0.4946602468376033),
-			Scores: []*big.Float{
-				big.NewFloat(2.4946602468376035), big.NewFloat(13),
+			Balance: float64(0.4946602468376033),
+			Scores: []float64{
+				float64(2.4946602468376035), float64(13),
 			},
 		},
 		{
 			Choice:  4,
-			Balance: big.NewFloat(5.4946602468376033),
-			Scores: []*big.Float{
-				big.NewFloat(8.4946602468376035), big.NewFloat(22),
+			Balance: float64(5.4946602468376033),
+			Scores: []float64{
+				float64(8.4946602468376035), float64(22),
 			},
 		},
 		{
 			Choice:  3,
-			Balance: big.NewFloat(2.2723898),
-			Scores: []*big.Float{
-				big.NewFloat(6.4946602468376035), big.NewFloat(5),
+			Balance: float64(2.2723898),
+			Scores: []float64{
+				float64(6.4946602468376035), float64(5),
 			},
 		},
 	}
@@ -48,17 +49,17 @@ func TestSingleChoiceVoting(t *testing.T) {
 		t.Errorf("Expected %d valid votes, got %d", len(votes), len(validVotes))
 	}
 
-	expectedScoresTotal := big.NewFloat(10.756370540512808).SetPrec(7)
-	scoresTotal := singleChoiceVoting.GetScoresTotal().SetPrec(7)
-	if scoresTotal.Cmp(expectedScoresTotal) != 0 {
+	expectedScoresTotal := float64(10.756370540512808)
+	scoresTotal := singleChoiceVoting.GetScoresTotal()
+	if !utils.FloatEqual(scoresTotal, expectedScoresTotal) {
 		t.Errorf("Expected scores total to be %f, got %f", expectedScoresTotal, scoresTotal)
 	}
 
-	expectedScores := []*big.Float{
-		big.NewFloat(2.4946602468376033),
-		big.NewFloat(0.4946602468376033),
-		big.NewFloat(2.2723898),
-		big.NewFloat(5.494660246837603),
+	expectedScores := []float64{
+		float64(2.4946602468376033),
+		float64(0.4946602468376033),
+		float64(2.2723898),
+		float64(5.494660246837603),
 	}
 	scores := singleChoiceVoting.GetScores(t)
 	if len(scores) != len(choices) {
@@ -66,7 +67,7 @@ func TestSingleChoiceVoting(t *testing.T) {
 	}
 
 	for i, score := range scores {
-		if score.SetPrec(5).Cmp(expectedScores[i].SetPrec(5)) != 0 {
+		if !utils.FloatEqual(score, expectedScores[i]) {
 			t.Errorf("Expected score %f for choice %s, got %f", expectedScores[i], choices[i], score)
 		}
 	}
@@ -76,16 +77,16 @@ func TestSingleChoiceVoting(t *testing.T) {
 		t.Errorf("Expected %d scoresByStrategy, got %d", len(choices), len(scoresByStrategy))
 	}
 
-	expectedScoresByStrategy := [][]*big.Float{
-		{big.NewFloat(0.4946602468376035), big.NewFloat(2)},
-		{big.NewFloat(2.4946602468376033), big.NewFloat(13)},
-		{big.NewFloat(6.494660246837603), big.NewFloat(5)},
-		{big.NewFloat(8.494660246837604), big.NewFloat(22)},
+	expectedScoresByStrategy := [][]float64{
+		{float64(0.4946602468376035), float64(2)},
+		{float64(2.4946602468376033), float64(13)},
+		{float64(6.494660246837603), float64(5)},
+		{float64(8.494660246837604), float64(22)},
 	}
 
 	for i, scoreByStrategy := range scoresByStrategy {
 		for j, score := range scoreByStrategy {
-			if score.SetPrec(5).Cmp(expectedScoresByStrategy[i][j].SetPrec(5)) != 0 {
+			if !utils.FloatEqual(score, expectedScoresByStrategy[i][j]) {
 				t.Errorf("Expected score %f got %f", expectedScoresByStrategy[i][j], score)
 			}
 		}
