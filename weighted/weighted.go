@@ -5,6 +5,8 @@ import (
 	"strconv"
 
 	"github.com/thoas/go-funk"
+
+	"github.com/This-Is-Prince/votingSystemGo/utils"
 )
 
 type WeightedVote struct {
@@ -44,31 +46,9 @@ func IsValidChoice(voteChoice WeightedChoice, proposalChoices []string) bool {
 	return true
 }
 
-func CalcPercentageOfSum(choice float64, choices []float64) float64 {
-	if choice == 0.0 {
-		return 0.0
-	}
-
-	whole := funk.Reduce(choices, func(acc float64, c float64) float64 {
-		return acc + c
-	}, 0).(float64)
-
-	if whole == 0.0 {
-		return 0.0
-	}
-
-	return choice / whole
-}
-
 func WeightedPower(choice float64, choices []float64, balance float64) float64 {
-	percentage := CalcPercentageOfSum(choice, choices)
+	percentage := utils.CalcPercentageOfSum(choice, choices)
 	return percentage * balance
-}
-
-func CalcReducedQuadraticScores(scoresTotal float64, percentages []float64) []float64 {
-	return funk.Map(percentages, func(p float64) float64 {
-		return p * scoresTotal
-	}).([]float64)
 }
 
 func (v *WeightedVoting) GetValidVotes() []WeightedVote {
@@ -114,9 +94,9 @@ func (v *WeightedVoting) GetScores() []float64 {
 
 	percentageOfScores := []float64{}
 	for _, score := range scores {
-		percentageOfScores = append(percentageOfScores, CalcPercentageOfSum(score, scores))
+		percentageOfScores = append(percentageOfScores, utils.CalcPercentageOfSum(score, scores))
 	}
-	newScores := CalcReducedQuadraticScores(scoresTotal, percentageOfScores)
+	newScores := utils.CalcReducedQuadraticScores(scoresTotal, percentageOfScores)
 
 	return newScores
 }
@@ -159,9 +139,9 @@ func (v *WeightedVoting) GetScoresByStrategy() [][]float64 {
 	for idx, scores := range scoresByStrategy {
 		percentageOfScores := []float64{}
 		for _, score := range scores {
-			percentageOfScores = append(percentageOfScores, CalcPercentageOfSum((score), flattenScoresByStrategy.([]float64)))
+			percentageOfScores = append(percentageOfScores, utils.CalcPercentageOfSum((score), flattenScoresByStrategy.([]float64)))
 		}
-		scoresByStrategy[idx] = CalcReducedQuadraticScores(scoresTotal, percentageOfScores)
+		scoresByStrategy[idx] = utils.CalcReducedQuadraticScores(scoresTotal, percentageOfScores)
 	}
 
 	return scoresByStrategy

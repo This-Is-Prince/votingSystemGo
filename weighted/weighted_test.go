@@ -1,13 +1,10 @@
 package weighted
 
 import (
-	"math"
 	"testing"
-)
 
-func FloatEqual(a, b float64) bool {
-	return math.Abs(a-b) < 0.0000001
-}
+	"github.com/This-Is-Prince/votingSystemGo/utils"
+)
 
 func TestWeightedVoting(t *testing.T) {
 
@@ -73,7 +70,7 @@ func TestWeightedVoting(t *testing.T) {
 
 	expectedScoresTotal := (10.756370540512808)
 	scoresTotal := quadraticVoting.GetScoresTotal()
-	if !FloatEqual(scoresTotal, expectedScoresTotal) {
+	if !utils.FloatEqual(scoresTotal, expectedScoresTotal) {
 		t.Errorf("Expected scores total to be %f, got %f", expectedScoresTotal, scoresTotal)
 	}
 
@@ -89,7 +86,7 @@ func TestWeightedVoting(t *testing.T) {
 	}
 
 	for i, score := range scores {
-		if !FloatEqual(score, expectedScores[i]) {
+		if !utils.FloatEqual(score, expectedScores[i]) {
 			t.Errorf("Expected score %f for choice %s, got %f", expectedScores[i], choices[i], score)
 		}
 	}
@@ -108,7 +105,7 @@ func TestWeightedVoting(t *testing.T) {
 
 	for i, scoreByStrategy := range scoresByStrategy {
 		for j, score := range scoreByStrategy {
-			if !FloatEqual(score, expectedScoresByStrategy[i][j]) {
+			if !utils.FloatEqual(score, expectedScoresByStrategy[i][j]) {
 				t.Errorf("Expected score %f got %f for %v %v", expectedScoresByStrategy[i][j], score, i, j)
 			}
 		}

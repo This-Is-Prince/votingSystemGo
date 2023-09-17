@@ -2,16 +2,18 @@ package quadratic
 
 import (
 	"log"
-	"math/big"
+	"math"
 	"strconv"
 
 	"github.com/thoas/go-funk"
+
+	"github.com/This-Is-Prince/votingSystemGo/utils"
 )
 
 type QuadraticVote struct {
 	Choice  QuadraticChoice `json:"choice"`
-	Balance *big.Float      `json:"balance"`
-	Scores  []*big.Float    `json:"scores"`
+	Balance float64         `json:"balance"`
+	Scores  []float64       `json:"scores"`
 }
 
 type QuadraticChoice map[string]int
@@ -45,109 +47,88 @@ func IsValidChoice(voteChoice QuadraticChoice, proposalChoices []string) bool {
 	return true
 }
 
-func CalcPercentageOfSum(choice *big.Float, choices []*big.Float) *big.Float {
-	if new(big.Float).Set(choice).SetPrec(5).Cmp(big.NewFloat(0.0).SetPrec(5)) == 0 {
-		return big.NewFloat(0.0)
-	}
-
-	whole := funk.Reduce(choices, func(acc *big.Float, c *big.Float) *big.Float {
-		return acc.Add(acc, c)
-	}, big.NewFloat(0)).(*big.Float)
-
-	if whole.SetPrec(5).Cmp(big.NewFloat(0.0).SetPrec(5)) == 0 {
-		return big.NewFloat(0.0)
-	}
-
-	return choice.Quo(choice, whole)
-}
-
-func CalcReducedQuadraticScores(scoresTotal *big.Float, percentages []*big.Float) []*big.Float {
-	return funk.Map(percentages, func(p *big.Float) *big.Float {
-		return p.Mul(p, scoresTotal)
-	}).([]*big.Float)
-}
-
 func (v *QuadraticVoting) GetValidVotes() []QuadraticVote {
 	return funk.Filter(v.Votes, func(vote QuadraticVote) bool {
 		return IsValidChoice(vote.Choice, v.Choices)
 	}).([]QuadraticVote)
 }
 
-func (v *QuadraticVoting) GetScoresTotal() *big.Float {
-	return funk.Reduce(v.Votes, func(acc *big.Float, vote QuadraticVote) *big.Float {
-		return acc.Add(acc, vote.Balance)
-	}, big.NewFloat(0)).(*big.Float)
+func (v *QuadraticVoting) GetScoresTotal() float64 {
+	return funk.Reduce(v.Votes, func(acc float64, vote QuadraticVote) float64 {
+		return acc + vote.Balance
+	}, float64(0)).(float64)
 }
 
-func (v *QuadraticVoting) GetScores() []*big.Float {
-	scoresTotal := big.NewFloat(0)
-	scores := []*big.Float{}
+func (v *QuadraticVoting) GetScores() []float64 {
+	scoresTotal := float64(0)
+	scores := []float64{}
 
 	for range v.Choices {
-		scores = append(scores, big.NewFloat(0))
+		scores = append(scores, float64(0))
 	}
 
 	for _, vote := range v.Votes {
 		if IsValidChoice(vote.Choice, v.Choices) {
-			scoresTotal = scoresTotal.Add(scoresTotal, vote.Balance)
-			choices := []*big.Float{}
+			scoresTotal = scoresTotal + vote.Balance
+			choices := []float64{}
 			for _, v := range vote.Choice {
-				choices = append(choices, big.NewFloat(float64(v)))
+				choices = append(choices, float64(v))
 			}
 			for idx, value := range vote.Choice {
-				choiceWeightPercent := CalcPercentageOfSum(big.NewFloat(float64(value)), choices)
-
-				sqrt := big.NewFloat(0).Sqrt(big.NewFloat(0).Mul(choiceWeightPercent, vote.Balance))
+				choiceWeightPercent := utils.CalcPercentageOfSum(float64(value), choices)
+				choiceWeightPower := choiceWeightPercent * vote.Balance
+				sqrt := math.Sqrt(choiceWeightPower)
 				index, err := strconv.ParseInt(idx, 10, 64)
 				if err != nil {
 					log.Println("Error while parsing string:-", err)
 					continue
 				}
-				scores[index-1] = scores[index-1].Add(scores[index-1], sqrt)
+				scores[index-1] = scores[index-1] + sqrt
 			}
 		}
 	}
 
 	for idx, score := range scores {
-		scores[idx] = score.Mul(score, score)
+		scores[idx] = score * score
 	}
 
-	percentageOfScores := []*big.Float{}
+	percentageOfScores := []float64{}
 	for _, score := range scores {
-		percentageOfScores = append(percentageOfScores, CalcPercentageOfSum(new(big.Float).Set(score), scores))
+		percentageOfScores = append(percentageOfScores, utils.CalcPercentageOfSum(score, scores))
 	}
-	return CalcReducedQuadraticScores(scoresTotal, percentageOfScores)
+	return utils.CalcReducedQuadraticScores(scoresTotal, percentageOfScores)
 }
 
-func (v *QuadraticVoting) GetScoresByStrategy() [][]*big.Float {
-	scoresTotal := big.NewFloat(0)
-	scoresByStrategy := [][]*big.Float{}
+func (v *QuadraticVoting) GetScoresByStrategy() [][]float64 {
+	scoresTotal := float64(0)
+	scoresByStrategy := [][]float64{}
 
 	for range v.Choices {
-		scores := []*big.Float{}
+		scores := []float64{}
 		for range v.Strategies {
-			scores = append(scores, big.NewFloat(0))
+			scores = append(scores, float64(0))
 		}
 		scoresByStrategy = append(scoresByStrategy, scores)
 	}
 
 	for _, vote := range v.Votes {
 		if IsValidChoice(vote.Choice, v.Choices) {
-			scoresTotal = scoresTotal.Add(scoresTotal, vote.Balance)
-			choices := []*big.Float{}
+			scoresTotal = scoresTotal + vote.Balance
+			choices := []float64{}
 			for _, v := range vote.Choice {
-				choices = append(choices, big.NewFloat(float64(v)))
+				choices = append(choices, float64(v))
 			}
 			for idx, value := range vote.Choice {
-				choiceWeightPercent := CalcPercentageOfSum(big.NewFloat(float64(value)), choices)
+				choiceWeightPercent := utils.CalcPercentageOfSum(float64(value), choices)
 				index, err := strconv.ParseInt(idx, 10, 64)
 				if err != nil {
 					log.Println("Error while parsing string:-", err)
 					continue
 				}
 				for sIdx, score := range vote.Scores {
-					sqrt := big.NewFloat(0).Sqrt(big.NewFloat(0).Mul(choiceWeightPercent, score))
-					scoresByStrategy[index-1][sIdx] = scoresByStrategy[index-1][sIdx].Add(scoresByStrategy[index-1][sIdx], sqrt)
+					choiceWeightPower := choiceWeightPercent * score
+					sqrt := math.Sqrt(choiceWeightPower)
+					scoresByStrategy[index-1][sIdx] = scoresByStrategy[index-1][sIdx] + sqrt
 				}
 			}
 		}
@@ -155,18 +136,18 @@ func (v *QuadraticVoting) GetScoresByStrategy() [][]*big.Float {
 
 	for _, scores := range scoresByStrategy {
 		for idx, score := range scores {
-			scores[idx] = score.Mul(score, score)
+			scores[idx] = score * score
 		}
 	}
 
 	flattenScoresByStrategy := funk.FlattenDeep(scoresByStrategy)
 
 	for idx, scores := range scoresByStrategy {
-		percentageOfScores := []*big.Float{}
+		percentageOfScores := []float64{}
 		for _, score := range scores {
-			percentageOfScores = append(percentageOfScores, CalcPercentageOfSum(new(big.Float).Set(score), flattenScoresByStrategy.([]*big.Float)))
+			percentageOfScores = append(percentageOfScores, utils.CalcPercentageOfSum(score, flattenScoresByStrategy.([]float64)))
 		}
-		scoresByStrategy[idx] = CalcReducedQuadraticScores(scoresTotal, percentageOfScores)
+		scoresByStrategy[idx] = utils.CalcReducedQuadraticScores(scoresTotal, percentageOfScores)
 	}
 
 	return scoresByStrategy
