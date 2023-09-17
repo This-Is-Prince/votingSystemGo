@@ -1,8 +1,6 @@
 package singleChoice
 
 import (
-	"testing"
-
 	"github.com/thoas/go-funk"
 )
 
@@ -34,7 +32,7 @@ func (v *SingleChoiceVoting) GetScoresTotal() float64 {
 	}, float64(0)).(float64)
 }
 
-func (v *SingleChoiceVoting) GetScores(t *testing.T) []float64 {
+func (v *SingleChoiceVoting) GetScores() []float64 {
 	scores := []float64{}
 
 	for range v.Choices {
@@ -51,7 +49,7 @@ func (v *SingleChoiceVoting) GetScores(t *testing.T) []float64 {
 	return scores
 }
 
-func (v *SingleChoiceVoting) GetScoresByStrategy(t *testing.T) [][]float64 {
+func (v *SingleChoiceVoting) GetScoresByStrategy() [][]float64 {
 	scoresByStrategy := [][]float64{}
 
 	for range v.Choices {

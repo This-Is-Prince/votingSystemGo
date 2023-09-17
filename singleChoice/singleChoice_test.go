@@ -61,7 +61,7 @@ func TestSingleChoiceVoting(t *testing.T) {
 		float64(2.2723898),
 		float64(5.494660246837603),
 	}
-	scores := singleChoiceVoting.GetScores(t)
+	scores := singleChoiceVoting.GetScores()
 	if len(scores) != len(choices) {
 		t.Errorf("Expected %d scores, got %d", len(choices), len(scores))
 	}
@@ -72,7 +72,7 @@ func TestSingleChoiceVoting(t *testing.T) {
 		}
 	}
 
-	scoresByStrategy := singleChoiceVoting.GetScoresByStrategy(t)
+	scoresByStrategy := singleChoiceVoting.GetScoresByStrategy()
 	if len(scoresByStrategy) != len(choices) {
 		t.Errorf("Expected %d scoresByStrategy, got %d", len(choices), len(scoresByStrategy))
 	}
